@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Jibit Payment Gateway\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-31 13:04+0000\n"
+"POT-Creation-Date: 2018-09-01 12:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -12,58 +12,62 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/"
 
-#: class-jibit-woocommerce-payment-gateway.php:100
+#: class-jibit-woocommerce-payment-gateway.php:123
 msgid "An error has occurred. Please try again."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:74
+#: class-jibit-woocommerce-payment-gateway.php:90
 msgid "Description will be shown on payment process to the user"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:57
-#: class-jibit-woocommerce-payment-gateway.php:59
-msgid "Enable jibit gateway"
+#: class-jibit-woocommerce-payment-gateway.php:73
+#: class-jibit-woocommerce-payment-gateway.php:75
+msgid "Enable Jibit gateway"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:99
+#: class-jibit-woocommerce-payment-gateway.php:122
 msgid ""
 "Enter the message which will be shown to the customer after failed payment"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:92
+#: class-jibit-woocommerce-payment-gateway.php:115
 msgid ""
 "Enter the message which will be shown to the customer after successful "
 "payment"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:97
+#: class-jibit-woocommerce-payment-gateway.php:120
 msgid "Failed payment message"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:71
+#: class-jibit-woocommerce-payment-gateway.php:87
 msgid "Gateway description"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:78
+#: class-jibit-woocommerce-payment-gateway.php:94
 msgid "Gateway settings"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:64
+#: class-jibit-woocommerce-payment-gateway.php:80
 msgid "Gateway title"
 msgstr ""
 
 #. URI of the plugin
-#. Author URI of the plugin
 msgid "http://jibit.ir"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:14
-#: class-jibit-woocommerce-payment-gateway.php:15
+#. Author URI of the plugin
+msgid "http://jibit.ir/woocommerce-plugin"
+msgstr ""
+
+#: class-jibit-woocommerce-payment-gateway.php:22
+#: class-jibit-woocommerce-payment-gateway.php:23
 msgid "Jibit Gateway"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:67
+#: class-jibit-woocommerce-payment-gateway.php:83
 msgid "Jibit Payment"
 msgstr ""
 
@@ -71,15 +75,19 @@ msgstr ""
 msgid "Jibit Team"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:83
-msgid "Merchant ID"
+#: class-jibit-woocommerce-payment-gateway.php:99
+msgid "Merchant ID (username)"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:75
+#: class-jibit-woocommerce-payment-gateway.php:106
+msgid "Merchant Password"
+msgstr ""
+
+#: class-jibit-woocommerce-payment-gateway.php:91
 msgid "Pay with your Jibit account"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:90
+#: class-jibit-woocommerce-payment-gateway.php:113
 msgid "Successful payment message"
 msgstr ""
 
@@ -87,7 +95,7 @@ msgstr ""
 msgid "This plugin adds Jibit payment gateway to WooCommerce."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:66
+#: class-jibit-woocommerce-payment-gateway.php:82
 msgid "This title will be shown in checkout page"
 msgstr ""
 
@@ -95,10 +103,14 @@ msgstr ""
 msgid "WooCommerce Jibit Payment Gateway"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:85
+#: class-jibit-woocommerce-payment-gateway.php:101
 msgid "Your merchant ID in Jibit"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:93
+#: class-jibit-woocommerce-payment-gateway.php:108
+msgid "Your merchant password"
+msgstr ""
+
+#: class-jibit-woocommerce-payment-gateway.php:116
 msgid "Your payment was successful"
 msgstr ""

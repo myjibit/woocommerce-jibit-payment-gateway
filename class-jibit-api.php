@@ -19,7 +19,135 @@ if ( class_exists( 'Jibit_API' ) ) {
  */
 class Jibit_API {
 
-	public static $jibitApi = 'https://appserver.jibit.mobi/';
+	public static $jibitApi = 'https://pg.jibit.mobi';
+
+	/**
+	 * @param $username string
+	 * @param $password string
+	 *
+	 * @return array
+	 */
+	public static function getToken( $username, $password ) {
+		$data = wp_remote_post(
+			self::$jibitApi . '/authenticate',
+			array(
+				'headers' => array( 'Content-Type' => 'application/json; charset=utf-8' ),
+				'body'    => json_encode( array(
+					'username' => $username,
+					'password' => $password
+				) ),
+			)
+		);
+		if ( is_wp_error( $data ) ) {
+			return array(
+				'succeed' => false,
+				'error'   => $data
+			);
+		}
+		$body = json_decode( $data[ 'body' ], true );
+		if ( ! $body ) {
+			return array(
+				'succeed' => false
+			);
+		}
+
+		if ( $body[ 'errorCode' ] > 0 ) {
+			return array(
+				'succeed' => false,
+				'error'   => new WP_Error( 'jibit-error', $body[ 'errorCode' ] )
+			);
+		}
+
+		return array(
+			'succeed'       => true,
+			'token'         => $body[ 'result' ][ 'token' ],
+			'refresh_token' => $body[ 'result' ][ 'refreshToken' ]
+		);
+	}
+
+	/**
+	 * @param $token
+	 * @param $refreshToken
+	 *
+	 * @return array
+	 */
+	public static function refreshToken( $token, $refreshToken ) {
+		$data = wp_remote_post(
+			self::$jibitApi . '/authenticate/refresh',
+			array(
+				'headers' => array( 'Content-Type' => 'application/json; charset=utf-8' ),
+				'body'    => json_encode( array(
+					'token'         => $token,
+					'refresh_token' => $refreshToken
+				) ),
+			)
+		);
+		if ( is_wp_error( $data ) ) {
+			return array(
+				'succeed' => false,
+				'error'   => $data
+			);
+		}
+		$body = json_decode( $data[ 'body' ], true );
+		if ( ! $body ) {
+			return array(
+				'succeed' => false
+			);
+		}
+
+		if ( $body[ 'errorCode' ] > 0 ) {
+			return array(
+				'succeed' => false,
+				'error'   => new WP_Error( 'jibit-error', $body[ 'errorCode' ] )
+			);
+		}
+
+		return array(
+			'succeed'       => true,
+			'token'         => $body[ 'result' ][ 'token' ],
+			'refresh_token' => $body[ 'result' ][ 'refreshToken' ]
+		);
+	}
+
+	/**
+	 * @param $username
+	 * @param $password
+	 *
+	 * @return bool|mixed
+	 */
+	public static function getCachedToken( $username, $password ) {
+		$tokenOptionName        = 'jibit_wc_pay_token';
+		$refreshTokenOptionName = 'jibit_wc_pay_refresh_token';
+		$token                  = get_option( $tokenOptionName, array() );
+		$refreshToken           = get_option( $refreshTokenOptionName, false );
+		if ( $token && $token[ 'expires_in' ] > time() ) {
+			return $token[ 'token' ];
+		}
+		if ( $refreshToken ) {
+			$newToken = self::refreshToken( $token[ 'token' ], $refreshToken );
+			if ( ! $newToken[ 'succeed' ] ) {
+				return false;
+			}
+			update_option( $tokenOptionName, array(
+				'token'      => $token[ 'token' ],
+				'expires_in' => time() + ( 1440 * MINUTE_IN_SECONDS )
+			) );
+			update_option( $refreshTokenOptionName, $token[ 'refreshToken' ] );
+
+			return $newToken[ 'token' ];
+		}
+		$token = self::getToken( $username, $password );
+		if ( ! $token[ 'succeed' ] ) {
+			return false;
+		}
+		update_option( $tokenOptionName, array(
+			'token'      => $token[ 'token' ],
+			'expires_in' => time() + ( 1440 * MINUTE_IN_SECONDS )
+		) );
+		update_option( $refreshTokenOptionName, $token[ 'refresh_token' ] );
+
+		return $token[ 'token' ];
+	}
 
 	/**
 	 * Request an order to pay from Jibit. Returns an array which includes order_id and succeed properties.
@@ -28,11 +156,14 @@ class Jibit_API {
 	 *
 	 * @return array
 	 */
-	public static function requestOrder( $order ) {
+	public static function requestOrder( $order, $token ) {
 		$data = wp_remote_post(
-			self::$jibitApi . 'order_service/order/',
+			self::$jibitApi . '/order/initiate',
 			array(
-				'headers' => array( 'Content-Type' => 'application/json; charset=utf-8' ),
+				'headers' => array(
+					'Content-Type'  => 'application/json; charset=utf-8',
+					'Authorization' => 'Bearer ' . $token,
+				),
 				'body'    => json_encode( $order ),
 				'method'  => 'POST'
 			)
@@ -51,16 +182,17 @@ class Jibit_API {
 			);
 		}
 
-		if ( $body[ 'errors' ] !== null ) {
+		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => new WP_Error( 'jibit-error', $body[ 'errors' ] )
+				'error'   => new WP_Error( 'jibit-error', $body[ 'errorCode' ] )
 			);
 		}
 
 		return array(
-			'succeed'  => true,
-			'order_id' => $body[ 'orderId' ]
+			'succeed'      => true,
+			'order_id'     => $body[ 'result' ][ 'orderId' ],
+			'redirect_url' => $body[ 'result' ][ 'redirectUrl' ]
 		);
 	}
 
@@ -71,14 +203,18 @@ class Jibit_API {
 	 *
 	 * @return array
 	 */
-	public static function verifyOrder( $orderId ) {
+	public static function verifyOrder( $orderId, $token ) {
 		$data = wp_remote_post(
-			self::$jibitApi . "order_service/order/verify/{$orderId}",
+			self::$jibitApi . "/order/verify/{$orderId}",
 			array(
-				'headers' => array( 'Content-Type' => 'application/json; charset=utf-8' ),
+				'headers' => array(
+					'Content-Type'  => 'application/json; charset=utf-8',
+					'Authorization' => 'Bearer ' . $token,
+				),
 				'method'  => 'POST'
 			)
 		);
+
 		if ( is_wp_error( $data ) ) {
 			return array(
 				'verified' => false,
@@ -86,9 +222,25 @@ class Jibit_API {
 			);
 		}
 
+		$body = json_decode( $data[ 'body' ], true );
+
+		if ( ! $body ) {
+			return array(
+				'verified' => false
+			);
+		}
+
+		if ( ! isset( $body[ 'errorCode' ] ) || $body[ 'errorCode' ] > 0 ) {
+			return array(
+				'verified' => false
+			);
+		}
+
 		return array(
-			'verified' => json_decode( $data[ 'body' ] )
+			'verified' => true,
+			'result'   => $body[ 'result' ]
 		);
 	}
 
 }
+

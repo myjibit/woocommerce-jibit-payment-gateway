@@ -30,7 +30,8 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		$this->title       = $this->settings[ 'title' ];
 		$this->description = $this->settings[ 'description' ];
 
-		$this->merchantId = $this->settings[ 'merchantId' ];
+		$this->merchant_id       = $this->settings[ 'merchant_id' ];
+		$this->merchant_password = $this->settings[ 'merchant_password' ];
 
 		if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) ) {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
@@ -68,47 +69,54 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public function init_form_fields() {
 		$this->form_fields = apply_filters( 'WC_ZPal_Config', array(
-				'enabled'                  => array(
-					'title'    => __( 'Enable jibit gateway', 'wjpg' ),
+				'enabled'                    => array(
+					'title'    => __( 'Enable Jibit gateway', 'wjpg' ),
 					'type'     => 'checkbox',
-					'label'    => __( 'Enable jibit gateway', 'wjpg' ),
+					'label'    => __( 'Enable Jibit gateway', 'wjpg' ),
 					'default'  => 'yes',
 					'desc_tip' => true,
 				),
-				'title'                    => array(
+				'title'                      => array(
 					'title'       => __( 'Gateway title', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'This title will be shown in checkout page', 'wjpg' ),
 					'default'     => __( 'Jibit Payment', 'wjpg' ),
 					'desc_tip'    => true,
 				),
-				'description'              => array(
+				'description'                => array(
 					'title'       => __( 'Gateway description', 'wjpg' ),
 					'type'        => 'text',
 					'desc_tip'    => true,
 					'description' => __( 'Description will be shown on payment process to the user', 'wjpg' ),
 					'default'     => __( 'Pay with your Jibit account', 'wjpg' )
 				),
-				'account_confing'          => array(
+				'account_configs'            => array(
 					'title'       => __( 'Gateway settings', 'wjpg' ),
 					'type'        => 'title',
 					'description' => '',
 				),
-				'merchantId'               => array(
-					'title'       => __( 'Merchant ID', 'wjpg' ),
+				'merchant_id'                => array(
+					'title'       => __( 'Merchant ID (username)', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'Your merchant ID in Jibit', 'wjpg' ),
 					'default'     => '',
 					'desc_tip'    => true
 				),
-				'successfulPaymentMessage' => array(
+				'merchant_password'          => array(
+					'title'       => __( 'Merchant Password', 'wjpg' ),
+					'type'        => 'text',
+					'description' => __( 'Your merchant password', 'wjpg' ),
+					'default'     => '',
+					'desc_tip'    => true
+				),
+				'successful_payment_message' => array(
 					'title'       => __( 'Successful payment message', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'Enter the message which will be shown to the customer after successful payment', 'wjpg' ),
 					'default'     => __( 'Your payment was successful', 'wjpg' ),
 					'desc_tip'    => true
 				),
-				'failedPaymentMessage'     => array(
+				'failed_payment_message'     => array(
 					'title'       => __( 'Failed payment message', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'Enter the message which will be shown to the customer after failed payment', 'wjpg' ),
@@ -161,21 +169,31 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 			$amount *= 10;
 		}
 
+		$token = Jibit_API::getCachedToken( $this->merchant_id, $this->merchant_password );
+		if ( ! $token ) {
+			return false;
+		}
 
 		$phone       = get_post_meta( $order_id, '_billing_phone', true );
 		$callbackUrl = add_query_arg( 'wc_order', $order_id, WC()->api_request_url( 'wc_jibit_gateway' ) );
 
 
-		$jibitOrder = Jibit_API::requestOrder( array(
-			'mobile'      => $phone,
-			'amount'      => $amount,
-			'callBackUrl' => $callbackUrl,
-			'merchantId'  => $this->merchantId
-		) );
+		$jibitOrder = Jibit_API::requestOrder(
+			array(
+				'amount'          => $amount,
+				'callBackUrl'     => $callbackUrl,
+				'userIdentity'    => $phone,
+				'additionalData'  => json_encode( array() ),
+				'description'     => '',
+				'merchantOrderId' => $order_id
+			),
+			$token
+		);
 
 
 		if ( $jibitOrder[ 'succeed' ] ) {
 			update_post_meta( $order_id, 'jibit_order_id', $jibitOrder[ 'order_id' ] );
+			update_post_meta( $order_id, 'jibit_order_redirect_url', $jibitOrder[ 'redirect_url' ] );
 		}
 
 	}
@@ -194,13 +212,13 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		}
 
 		$jibitOrderId = get_post_meta( $order_id, 'jibit_order_id', true );
+		$paymentUrl   = get_post_meta( $order_id, 'jibit_order_redirect_url', true );
 
 		if ( ! $jibitOrderId ) {
 			return;
 		}
 
-		$paymentUrl = add_query_arg( array( 'order_id' => $jibitOrderId ), WC_JIBIT_QRPG_URL );
-		$returnUrl  = wc_get_checkout_url();
+		$returnUrl = wc_get_checkout_url();
 
 
 		$template = locate_template( "woocommerce/jibit/payment-form.php", false );
@@ -243,17 +261,41 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 			exit;
 		}
 
-		if ( empty( $_GET[ 'orderStatus' ] ) || $_GET[ 'orderStatus' ] !== WC_JIBIT_SUCCESSFUL_ORDER ) {
-			wc_add_notice( wpautop( wptexturize( $this->settings[ 'failedPaymentMessage' ] ) ), 'error' );
+		if ( empty( $_GET[ 'status' ] ) || $_GET[ 'status' ] !== WC_JIBIT_ORDER_PURCHASE_BY_USER ) {
+			wc_add_notice( wpautop( wptexturize( $this->settings[ 'failed_payment_message' ] ) ), 'error' );
 			wp_redirect( $woocommerce->cart->get_checkout_url() );
 			exit;
 		}
 
-		$orderId      = $_GET[ 'wc_order' ];
+		if (
+			$order->get_status() !== "pending"
+		) {
+			wc_add_notice( wpautop( wptexturize( __( "This order has been already paid.", "jwpg" ) ) ), 'error' );
+			wp_redirect( $woocommerce->cart->get_checkout_url() );
+			exit;
+		}
+
+
 		$jibitOrderId = $_GET[ 'orderId' ];
 		$amount       = absint( $order->get_total() );
+		if ( get_woocommerce_currency() === 'IRT' ) {
+			$amount *= 10;
+		}
 
-		$verify = Jibit_API::verifyOrder( $jibitOrderId );
+
+		$token = Jibit_API::getCachedToken( $this->merchant_id, $this->merchant_password );
+		if ( ! $token ) {
+			wc_add_notice( wpautop( wptexturize( $this->settings[ 'failed_payment_message' ] ) ), 'error' );
+			wp_redirect( $woocommerce->cart->get_checkout_url() );
+			exit;
+		}
+		$verify = Jibit_API::verifyOrder( $jibitOrderId, $token );
+
+		if ( absint( $verify[ 'result' ][ 'amount' ] ) !== absint( $amount ) ) {
+			wc_add_notice( wpautop( wptexturize( __( "Invalid order payment.", "jwpg" ) ) ), 'error' );
+			wp_redirect( $woocommerce->cart->get_checkout_url() );
+			exit;
+		}
 
 		if ( ! $verify[ 'verified' ] ) {
 			wc_add_notice( wpautop( wptexturize( __( 'Could\'t verify the order. Please contact the admin.', 'jwpg' ) ) ), 'error' );
@@ -267,7 +309,7 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		$note = sprintf( __( 'Payment was successful. Order ID: "%s"', 'jwpg' ), $jibitOrderId );
 		$order->add_order_note( $note, true );
 
-		wc_add_notice( $this->settings[ 'successfulPaymentMessage' ], 'success' );
+		wc_add_notice( $this->settings[ 'successful_payment_message' ], 'success' );
 		wp_redirect( add_query_arg( 'wc_status', 'success', $this->get_return_url( $order ) ) );
 		exit;
 	}
