@@ -38,7 +38,7 @@ class Jibit_API {
 				) ),
 			)
 		);
-		if ( is_wp_error( $data ) ) {
+		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
 				'error'   => $data
@@ -82,7 +82,7 @@ class Jibit_API {
 				) ),
 			)
 		);
-		if ( is_wp_error( $data ) ) {
+		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
 				'error'   => $data
@@ -168,12 +168,13 @@ class Jibit_API {
 				'method'  => 'POST'
 			)
 		);
-		if ( is_wp_error( $data ) ) {
+		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
 				'error'   => $data
 			);
 		}
+
 		$body = json_decode( $data[ 'body' ], true );
 
 		if ( ! $body ) {
@@ -197,9 +198,10 @@ class Jibit_API {
 	}
 
 	/**
-	 * Verifies an order id. Returns in array which includes "verified" property which is boolean.
+	 * Verifies an order id. Returns in array which includes "verified" property with boolean type.
 	 *
 	 * @param $orderId
+	 * @param $token
 	 *
 	 * @return array
 	 */
@@ -215,7 +217,54 @@ class Jibit_API {
 			)
 		);
 
-		if ( is_wp_error( $data ) ) {
+		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
+			return array(
+				'verified' => false,
+				'error'    => $data
+			);
+		}
+
+		$body = json_decode( $data[ 'body' ], true );
+
+		if ( ! $body ) {
+			return array(
+				'verified' => false
+			);
+		}
+
+		if ( ! isset( $body[ 'errorCode' ] ) || $body[ 'errorCode' ] > 0 ) {
+			return array(
+				'verified' => false
+			);
+		}
+
+		return array(
+			'verified' => true,
+			'result'   => $body[ 'result' ]
+		);
+	}
+
+	/**
+	 * Verifies an order id. Returns in array which includes "verified" property with boolean type.
+	 *
+	 * @param $orderId
+	 * @param $token
+	 *
+	 * @return array
+	 */
+	public static function inquiryOrder( $orderId, $token ) {
+		$data = wp_remote_get(
+			self::$jibitApi . "/order/inquiry/{$orderId}",
+			array(
+				'headers' => array(
+					'Content-Type'  => 'application/json; charset=utf-8',
+					'Authorization' => 'Bearer ' . $token,
+				),
+				'method'  => 'GET'
+			)
+		);
+
+		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'verified' => false,
 				'error'    => $data
