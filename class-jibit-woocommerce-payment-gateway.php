@@ -69,58 +69,84 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public function init_form_fields() {
 		$this->form_fields = apply_filters( 'WC_ZPal_Config', array(
-				'enabled'                    => array(
+				'enabled'                       => array(
 					'title'    => __( 'Enable Jibit gateway', 'wjpg' ),
 					'type'     => 'checkbox',
 					'label'    => __( 'Enable Jibit gateway', 'wjpg' ),
 					'default'  => 'yes',
 					'desc_tip' => true,
 				),
-				'title'                      => array(
+				'title'                         => array(
 					'title'       => __( 'Gateway title', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'This title will be shown in checkout page', 'wjpg' ),
 					'default'     => __( 'Jibit Payment', 'wjpg' ),
 					'desc_tip'    => true,
 				),
-				'description'                => array(
+				'description'                   => array(
 					'title'       => __( 'Gateway description', 'wjpg' ),
 					'type'        => 'text',
 					'desc_tip'    => true,
 					'description' => __( 'Description will be shown on payment process to the user', 'wjpg' ),
 					'default'     => __( 'Pay with your Jibit account', 'wjpg' )
 				),
-				'account_configs'            => array(
+				'merchant_settings'             => array(
 					'title'       => __( 'Gateway settings', 'wjpg' ),
 					'type'        => 'title',
 					'description' => '',
 				),
-				'merchant_id'                => array(
+				'merchant_id'                   => array(
 					'title'       => __( 'Merchant ID (username)', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'Your merchant ID in Jibit', 'wjpg' ),
 					'default'     => '',
 					'desc_tip'    => true
 				),
-				'merchant_password'          => array(
+				'merchant_password'             => array(
 					'title'       => __( 'Merchant Password', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'Your merchant password', 'wjpg' ),
 					'default'     => '',
 					'desc_tip'    => true
 				),
-				'successful_payment_message' => array(
+				'messages'                      => array(
+					'title'       => __( 'Messages', 'wjpg' ),
+					'type'        => 'title',
+					'description' => '',
+				),
+				'successful_payment_message'    => array(
 					'title'       => __( 'Successful payment message', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'Enter the message which will be shown to the customer after successful payment', 'wjpg' ),
 					'default'     => __( 'Your payment was successful', 'wjpg' ),
 					'desc_tip'    => true
 				),
-				'failed_payment_message'     => array(
+				'failed_payment_message'        => array(
 					'title'       => __( 'Failed payment message', 'wjpg' ),
 					'type'        => 'text',
 					'description' => __( 'Enter the message which will be shown to the customer after failed payment', 'wjpg' ),
 					'default'     => __( 'An error has occurred. Please try again.', 'wjpg' ),
+					'desc_tip'    => true
+				),
+				'user_canceled_payment_message' => array(
+					'title'       => __( 'User canceled payment message', 'wjpg' ),
+					'type'        => 'text',
+					'description' => __( 'This message will be shown when user has clicked on cancel button in gateway page.', 'wjpg' ),
+					'default'     => __( 'You have canceled the payment.', 'wjpg' ),
+					'desc_tip'    => true
+				),
+				'payment_expired_message'       => array(
+					'title'       => __( 'Payment expired message', 'wjpg' ),
+					'type'        => 'text',
+					'description' => __( 'This message will be shown when payment has expired.', 'wjpg' ),
+					'default'     => __( 'The payment is expired.', 'wjpg' ),
+					'desc_tip'    => true
+				),
+				'unverified_payment_message'    => array(
+					'title'       => __( 'Unverified payment message', 'wjpg' ),
+					'type'        => 'text',
+					'description' => __( 'This message will be shown when order is not verified by Jibit.', 'wjpg' ),
+					'default'     => __( 'Couldn\'t verify order by Jibit. Please contact admin.', 'wjpg' ),
 					'desc_tip'    => true
 				)
 			)
@@ -221,7 +247,7 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		$returnUrl = wc_get_checkout_url();
 
 
-		$template = locate_template( "woocommerce/jibit/payment-form.php", false );
+		$template = locate_template( 'woocommerce/jibit/payment-form.php', false );
 
 		if ( ! $template ) {
 			$template = WC_JIBIT_PAYMENT_GATEWAY_DIR . '/templates/payment-form.php';
@@ -256,21 +282,29 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 			|| ! is_string( $_GET[ 'orderId' ] )
 			|| $orderJibitId !== $_GET[ 'orderId' ]
 		) {
-			wc_add_notice( wpautop( wptexturize( __( 'An error has occurred.', 'jwpg' ) ) ), 'error' );
+			wc_add_notice( $this->settings[ 'failed_payment_message' ], 'error' );
 			wp_redirect( $woocommerce->cart->get_checkout_url() );
 			exit;
 		}
 
 		if ( empty( $_GET[ 'status' ] ) || $_GET[ 'status' ] !== WC_JIBIT_ORDER_PURCHASE_BY_USER ) {
-			wc_add_notice( wpautop( wptexturize( $this->settings[ 'failed_payment_message' ] ) ), 'error' );
+			$message = wjpgGetMessageFromRedirectStatus( $_GET[ 'status' ], $this->settings );
+			wc_add_notice( $message, 'error' );
 			wp_redirect( $woocommerce->cart->get_checkout_url() );
 			exit;
 		}
 
 		if (
-			$order->get_status() !== "pending"
+			$order->get_status() !== 'pending'
 		) {
-			wc_add_notice( wpautop( wptexturize( __( "This order has been already paid.", "jwpg" ) ) ), 'error' );
+			wc_add_notice( __( 'This order has been already paid.', 'jwpg' ), 'error' );
+			wp_redirect( $woocommerce->cart->get_checkout_url() );
+			exit;
+		}
+
+		$token = Jibit_API::getCachedToken( $this->merchant_id, $this->merchant_password );
+		if ( ! $token ) {
+			wc_add_notice( $this->settings[ 'failed_payment_message' ], 'error' );
 			wp_redirect( $woocommerce->cart->get_checkout_url() );
 			exit;
 		}
@@ -282,23 +316,16 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 			$amount *= 10;
 		}
 
-
-		$token = Jibit_API::getCachedToken( $this->merchant_id, $this->merchant_password );
-		if ( ! $token ) {
-			wc_add_notice( wpautop( wptexturize( $this->settings[ 'failed_payment_message' ] ) ), 'error' );
-			wp_redirect( $woocommerce->cart->get_checkout_url() );
-			exit;
-		}
 		$verify = Jibit_API::verifyOrder( $jibitOrderId, $token );
 
 		if ( absint( $verify[ 'result' ][ 'amount' ] ) !== absint( $amount ) ) {
-			wc_add_notice( wpautop( wptexturize( __( "Invalid order payment.", "jwpg" ) ) ), 'error' );
+			wc_add_notice( __( 'Invalid order info.', 'jwpg' ), 'error' );
 			wp_redirect( $woocommerce->cart->get_checkout_url() );
 			exit;
 		}
 
 		if ( ! $verify[ 'verified' ] ) {
-			wc_add_notice( wpautop( wptexturize( __( 'Could\'t verify the order. Please contact the admin.', 'jwpg' ) ) ), 'error' );
+			wc_add_notice( $this->settings[ 'unverified_payment_message' ], 'error' );
 			wp_redirect( $woocommerce->cart->get_checkout_url() );
 			exit;
 		}
