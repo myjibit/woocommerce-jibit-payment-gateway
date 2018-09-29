@@ -5,7 +5,7 @@
  * Description: This plugin adds Jibit payment gateway to WooCommerce.
  * Author:      Jibit Team
  * Author URI:  http://jibit.ir/woocommerce-plugin
- * Version:     1.0
+ * Version:     1.1
  * Text Domain: wjpg
  * Domain Path: /languages
  */

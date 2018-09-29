@@ -77,8 +77,8 @@ class Jibit_API {
 			array(
 				'headers' => array( 'Content-Type' => 'application/json; charset=utf-8' ),
 				'body'    => json_encode( array(
-					'token'         => $token,
-					'refresh_token' => $refreshToken
+					'token'        => $token,
+					'refreshToken' => $refreshToken
 				) ),
 			)
 		);
