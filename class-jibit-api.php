@@ -129,10 +129,10 @@ class Jibit_API {
 				return false;
 			}
 			update_option( $tokenOptionName, array(
-				'token'      => $token[ 'token' ],
-				'expires_in' => time() + ( 1440 * MINUTE_IN_SECONDS )
+				'token'      => $newToken[ 'token' ],
+				'expires_in' => time() + ( 5 * HOUR_IN_SECONDS )
 			) );
-			update_option( $refreshTokenOptionName, $token[ 'refreshToken' ] );
+			update_option( $refreshTokenOptionName, $newToken[ 'refresh_token' ] );
 
 			return $newToken[ 'token' ];
 		}
@@ -142,11 +142,21 @@ class Jibit_API {
 		}
 		update_option( $tokenOptionName, array(
 			'token'      => $token[ 'token' ],
-			'expires_in' => time() + ( 1440 * MINUTE_IN_SECONDS )
+			'expires_in' => time() + ( 5 * HOUR_IN_SECONDS )
 		) );
 		update_option( $refreshTokenOptionName, $token[ 'refresh_token' ] );
 
 		return $token[ 'token' ];
+	}
+
+	/**
+	 * Deletes token and refresh token
+	 */
+	public static function deleteToken() {
+		$tokenOptionName        = 'jibit_wc_pay_token';
+		$refreshTokenOptionName = 'jibit_wc_pay_refresh_token';
+		delete_option( $tokenOptionName );
+		delete_option( $refreshTokenOptionName );
 	}
 
 	/**
@@ -157,7 +167,7 @@ class Jibit_API {
 	 * @return array
 	 */
 	public static function requestOrder( $order, $token ) {
-		$data = wp_remote_post(
+		$data               = wp_remote_post(
 			self::$jibitApi . '/order/initiate',
 			array(
 				'headers' => array(
@@ -168,7 +178,12 @@ class Jibit_API {
 				'method'  => 'POST'
 			)
 		);
-		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
+		$responseStatusCode = $data[ 'response' ][ 'code' ];
+		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $responseStatusCode ) ) {
+			if ( $responseStatusCode === 401 ) {
+				self::deleteToken();
+			}
+
 			return array(
 				'succeed' => false,
 				'error'   => $data

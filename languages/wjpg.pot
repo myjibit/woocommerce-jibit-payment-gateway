@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Jibit Payment Gateway\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-02 08:39+0000\n"
+"POT-Creation-Date: 2018-10-14 08:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -13,6 +13,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/"
+
+#: filters.php:22
+msgid "Phone number is a required field."
+msgstr ""
+
+#: filters.php:25
+msgid "Phone number is invalid."
+msgstr ""
 
 #: class-jibit-woocommerce-payment-gateway.php:22
 #: class-jibit-woocommerce-payment-gateway.php:23
@@ -143,6 +151,14 @@ msgstr ""
 
 #: helpers.php:7
 msgid "User redirected to Jibit payment gateway."
+msgstr ""
+
+#: templates/payment-form.php:8
+msgid "Pay"
+msgstr ""
+
+#: templates/payment-form.php:9
+msgid "Return"
 msgstr ""
 
 #. Name of the plugin
