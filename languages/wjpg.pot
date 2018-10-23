@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Jibit Payment Gateway\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-14 08:17+0000\n"
+"POT-Creation-Date: 2018-10-23 07:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -22,127 +22,155 @@ msgstr ""
 msgid "Phone number is invalid."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:22
-#: class-jibit-woocommerce-payment-gateway.php:23
+#: filters.php:48
+msgid "Tokens reset."
+msgstr ""
+
+#: filters.php:53
+msgid "Reset Jibit Tokens"
+msgstr ""
+
+#: filters.php:54
+msgid "Reset"
+msgstr ""
+
+#: filters.php:56
+msgid "This will reset token and refresh token for pay request."
+msgstr ""
+
+#: class-jibit-woocommerce-payment-gateway.php:28
+#: class-jibit-woocommerce-payment-gateway.php:29
 msgid "Jibit Gateway"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:73
-#: class-jibit-woocommerce-payment-gateway.php:75
+#: class-jibit-woocommerce-payment-gateway.php:78
+#: class-jibit-woocommerce-payment-gateway.php:80
 msgid "Enable Jibit gateway"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:80
+#: class-jibit-woocommerce-payment-gateway.php:85
 msgid "Gateway title"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:82
+#: class-jibit-woocommerce-payment-gateway.php:87
 msgid "This title will be shown in checkout page"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:83
+#: class-jibit-woocommerce-payment-gateway.php:88
 msgid "Jibit Payment"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:87
+#: class-jibit-woocommerce-payment-gateway.php:92
 msgid "Gateway description"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:90
+#: class-jibit-woocommerce-payment-gateway.php:95
 msgid "Description will be shown on payment process to the user"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:91
+#: class-jibit-woocommerce-payment-gateway.php:96
 msgid "Pay with your Jibit account"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:94
+#: class-jibit-woocommerce-payment-gateway.php:99
 msgid "Gateway settings"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:99
+#: class-jibit-woocommerce-payment-gateway.php:104
 msgid "Merchant ID (username)"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:101
+#: class-jibit-woocommerce-payment-gateway.php:106
 msgid "Your merchant ID in Jibit"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:106
+#: class-jibit-woocommerce-payment-gateway.php:111
 msgid "Merchant Password"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:108
+#: class-jibit-woocommerce-payment-gateway.php:113
 msgid "Your merchant password"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:113
+#: class-jibit-woocommerce-payment-gateway.php:118
 msgid "Messages"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:118
+#: class-jibit-woocommerce-payment-gateway.php:123
 msgid "Successful payment message"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:120
+#: class-jibit-woocommerce-payment-gateway.php:125
 msgid ""
 "Enter the message which will be shown to the customer after successful "
 "payment"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:121
+#: class-jibit-woocommerce-payment-gateway.php:126
 msgid "Your payment was successful"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:125
+#: class-jibit-woocommerce-payment-gateway.php:130
 msgid "Failed payment message"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:127
+#: class-jibit-woocommerce-payment-gateway.php:132
 msgid ""
 "Enter the message which will be shown to the customer after failed payment"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:128
+#: class-jibit-woocommerce-payment-gateway.php:133
 msgid "An error has occurred. Please try again."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:132
+#: class-jibit-woocommerce-payment-gateway.php:137
 msgid "User canceled payment message"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:134
+#: class-jibit-woocommerce-payment-gateway.php:139
 msgid ""
 "This message will be shown when user has clicked on cancel button in gateway "
 "page."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:135
+#: class-jibit-woocommerce-payment-gateway.php:140
 msgid "You have canceled the payment."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:139
+#: class-jibit-woocommerce-payment-gateway.php:144
 msgid "Payment expired message"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:141
+#: class-jibit-woocommerce-payment-gateway.php:146
 msgid "This message will be shown when payment has expired."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:142
+#: class-jibit-woocommerce-payment-gateway.php:147
 msgid "The payment is expired."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:146
+#: class-jibit-woocommerce-payment-gateway.php:151
 msgid "Unverified payment message"
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:148
+#: class-jibit-woocommerce-payment-gateway.php:153
 msgid "This message will be shown when order is not verified by Jibit."
 msgstr ""
 
-#: class-jibit-woocommerce-payment-gateway.php:149
+#: class-jibit-woocommerce-payment-gateway.php:154
 msgid "Couldn't verify order by Jibit. Please contact admin."
+msgstr ""
+
+#: class-jibit-woocommerce-payment-gateway.php:158
+msgid "Tools"
+msgstr ""
+
+#: class-jibit-woocommerce-payment-gateway.php:163
+msgid "Enable debugging"
+msgstr ""
+
+#: class-jibit-woocommerce-payment-gateway.php:165
+msgid "Enables logs on errors"
 msgstr ""
 
 #: helpers.php:5
@@ -153,12 +181,16 @@ msgstr ""
 msgid "User redirected to Jibit payment gateway."
 msgstr ""
 
-#: templates/payment-form.php:8
+#: templates/payment-form.php:67
 msgid "Pay"
 msgstr ""
 
-#: templates/payment-form.php:9
+#: templates/payment-form.php:69
 msgid "Return"
+msgstr ""
+
+#: templates/admin/debug-page.php:16
+msgid "Jibit Debug"
 msgstr ""
 
 #. Name of the plugin

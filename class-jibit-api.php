@@ -4,10 +4,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( class_exists( 'Jibit_API' ) ) {
-	return;
-}
-
 /**
  * Jibit API Service
  *
@@ -41,20 +37,24 @@ class Jibit_API {
 		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
-				'error'   => $data
+				'error'   => "Couldn't validate request token body.",
+				'request' => $data
 			);
 		}
 		$body = json_decode( $data[ 'body' ], true );
 		if ( ! $body ) {
 			return array(
-				'succeed' => false
+				'succeed' => false,
+				'error'   => "Couldn't parse body for request token.",
+				'request' => $data
 			);
 		}
 
 		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => new WP_Error( 'jibit-error', $body[ 'errorCode' ] )
+				'error'   => 'Jibit didn\'t create token.',
+				'request' => $data
 			);
 		}
 
@@ -85,20 +85,24 @@ class Jibit_API {
 		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
-				'error'   => $data
+				'error'   => "Couldn't validate request refresh token body.",
+				'request' => $data
 			);
 		}
 		$body = json_decode( $data[ 'body' ], true );
 		if ( ! $body ) {
 			return array(
-				'succeed' => false
+				'succeed' => false,
+				'error'   => "Couldn't parse body for request refresh token.",
+				'request' => $data
 			);
 		}
 
 		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => new WP_Error( 'jibit-error', $body[ 'errorCode' ] )
+				'error'   => 'Jibit didn\'t create refresh token.',
+				'request' => $data
 			);
 		}
 
@@ -121,32 +125,49 @@ class Jibit_API {
 		$token                  = get_option( $tokenOptionName, array() );
 		$refreshToken           = get_option( $refreshTokenOptionName, false );
 		if ( $token && $token[ 'expires_in' ] > time() ) {
-			return $token[ 'token' ];
+			return array(
+				'succeed' => true,
+				'token'   => $token[ 'token' ],
+			);
 		}
 		if ( $refreshToken ) {
 			$newToken = self::refreshToken( $token[ 'token' ], $refreshToken );
 			if ( ! $newToken[ 'succeed' ] ) {
-				return false;
+				return array(
+					'succeed' => false,
+					'error'   => $newToken[ 'error' ],
+					'request' => $newToken[ 'request' ]
+				);
 			}
 			update_option( $tokenOptionName, array(
 				'token'      => $newToken[ 'token' ],
-				'expires_in' => time() + ( 5 * HOUR_IN_SECONDS )
+				'expires_in' => time() + ( 23 * HOUR_IN_SECONDS )
 			) );
 			update_option( $refreshTokenOptionName, $newToken[ 'refresh_token' ] );
 
-			return $newToken[ 'token' ];
+			return array(
+				'succeed' => true,
+				'token'   => $newToken[ 'token' ],
+			);
 		}
 		$token = self::getToken( $username, $password );
 		if ( ! $token[ 'succeed' ] ) {
-			return false;
+			return array(
+				'succeed' => false,
+				'error'   => $token[ 'error' ],
+				'request' => $token[ 'request' ]
+			);
 		}
 		update_option( $tokenOptionName, array(
 			'token'      => $token[ 'token' ],
-			'expires_in' => time() + ( 5 * HOUR_IN_SECONDS )
+			'expires_in' => time() + ( 23 * HOUR_IN_SECONDS )
 		) );
 		update_option( $refreshTokenOptionName, $token[ 'refresh_token' ] );
 
-		return $token[ 'token' ];
+		return array(
+			'succeed' => true,
+			'token'   => $token[ 'token' ]
+		);
 	}
 
 	/**
@@ -155,8 +176,11 @@ class Jibit_API {
 	public static function deleteToken() {
 		$tokenOptionName        = 'jibit_wc_pay_token';
 		$refreshTokenOptionName = 'jibit_wc_pay_refresh_token';
-		delete_option( $tokenOptionName );
-		delete_option( $refreshTokenOptionName );
+
+		return array(
+			'token'         => delete_option( $tokenOptionName ),
+			'refresh_token' => delete_option( $refreshTokenOptionName )
+		);
 	}
 
 	/**

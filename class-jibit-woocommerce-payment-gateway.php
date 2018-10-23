@@ -11,6 +11,12 @@
  * @package     WooCommerce Jibit Payment Gateway
  */
 class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
+	/**
+	 * Logger instance
+	 *
+	 * @var WC_Logger
+	 */
+	public static $log = false;
 
 	/**
 	 * Jibit_WooCommerce_Payment_Gateway constructor.
@@ -48,7 +54,6 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 			$this,
 			'jibitCallback'
 		) );
-
 	}
 
 	/**
@@ -68,7 +73,7 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return void
 	 */
 	public function init_form_fields() {
-		$this->form_fields = apply_filters( 'WC_ZPal_Config', array(
+		$this->form_fields = apply_filters( 'jibit_woocommerce_config', array(
 				'enabled'                       => array(
 					'title'    => __( 'Enable Jibit gateway', 'wjpg' ),
 					'type'     => 'checkbox',
@@ -148,7 +153,19 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 					'description' => __( 'This message will be shown when order is not verified by Jibit.', 'wjpg' ),
 					'default'     => __( 'Couldn\'t verify order by Jibit. Please contact admin.', 'wjpg' ),
 					'desc_tip'    => true
-				)
+				),
+				'tools'                         => array(
+					'title'       => __( 'Tools', 'wjpg' ),
+					'type'        => 'title',
+					'description' => '',
+				),
+				'debug'                         => array(
+					'title'    => __( 'Enable debugging', 'wjpg' ),
+					'type'     => 'checkbox',
+					'label'    => __( 'Enables logs on errors', 'wjpg' ),
+					'default'  => 'no',
+					'desc_tip' => true,
+				),
 			)
 		);
 	}
@@ -196,9 +213,12 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		}
 
 		$token = Jibit_API::getCachedToken( $this->merchant_id, $this->merchant_password );
-		if ( ! $token ) {
+		if ( ! $token[ 'succeed' ] ) {
+			$this->log( 'Get cached token result: ' . $token[ 'error' ] . ' - ' . wc_print_r( $token[ 'request' ], true ) );
+
 			return false;
 		}
+		$token = $token[ 'token' ];
 
 		$phone       = get_post_meta( $order_id, '_billing_phone', true );
 		$callbackUrl = add_query_arg( 'wc_order', $order_id, WC()->api_request_url( 'wc_jibit_gateway' ) );
@@ -303,11 +323,13 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		}
 
 		$token = Jibit_API::getCachedToken( $this->merchant_id, $this->merchant_password );
-		if ( ! $token ) {
+		if ( ! $token[ 'succeed' ] ) {
+			$this->log( 'Get cached token result: ' . $token[ 'error' ] . ' - ' . wc_print_r( $token[ 'request' ], true ) );
 			wc_add_notice( $this->settings[ 'failed_payment_message' ], 'error' );
 			wp_redirect( $woocommerce->cart->get_checkout_url() );
 			exit;
 		}
+		$token = $token[ 'token' ];
 
 
 		$jibitOrderId = $_GET[ 'orderId' ];
@@ -339,6 +361,17 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		wc_add_notice( $this->settings[ 'successful_payment_message' ], 'success' );
 		wp_redirect( add_query_arg( 'wc_status', 'success', $this->get_return_url( $order ) ) );
 		exit;
+	}
+
+	public function log( $message, $level = 'info' ) {
+		$enabled = ! empty( $this->settings[ 'enable_logs' ] ) && $this->settings[ 'enable_logs' ] === 'yes';
+		if ( $enabled ) {
+			if ( empty( self::$log ) ) {
+				self::$log = wc_get_logger();
+			}
+			self::$log->log( $level, $message, array( 'source' => 'jibit' ) );
+		}
+
 	}
 
 }
