@@ -124,7 +124,9 @@ class Jibit_API {
 		$refreshTokenOptionName = 'jibit_wc_pay_refresh_token';
 		$token                  = get_option( $tokenOptionName, array() );
 		$refreshToken           = get_option( $refreshTokenOptionName, false );
-		if ( $token && $token[ 'expires_in' ] > time() ) {
+		$time                   = time();
+
+		if ( $token && (int) $token[ 'expires_in' ] > $time ) {
 			return array(
 				'succeed' => true,
 				'token'   => $token[ 'token' ],
@@ -141,7 +143,7 @@ class Jibit_API {
 			}
 			update_option( $tokenOptionName, array(
 				'token'      => $newToken[ 'token' ],
-				'expires_in' => time() + ( 23 * HOUR_IN_SECONDS )
+				'expires_in' => $time + ( 23 * HOUR_IN_SECONDS )
 			) );
 			update_option( $refreshTokenOptionName, $newToken[ 'refresh_token' ] );
 
@@ -160,7 +162,7 @@ class Jibit_API {
 		}
 		update_option( $tokenOptionName, array(
 			'token'      => $token[ 'token' ],
-			'expires_in' => time() + ( 23 * HOUR_IN_SECONDS )
+			'expires_in' => $time + ( 23 * HOUR_IN_SECONDS )
 		) );
 		update_option( $refreshTokenOptionName, $token[ 'refresh_token' ] );
 
@@ -210,7 +212,8 @@ class Jibit_API {
 
 			return array(
 				'succeed' => false,
-				'error'   => $data
+				'error'   => sprintf( "Couldn't validate request payment status code. response status code: %s", $responseStatusCode ),
+				'request' => $data
 			);
 		}
 
@@ -218,14 +221,17 @@ class Jibit_API {
 
 		if ( ! $body ) {
 			return array(
-				'succeed' => false
+				'succeed' => false,
+				'error'   => sprintf( "Couldn't parse request payment body. body: %s", $data[ 'body' ] ),
+				'request' => $data
 			);
 		}
 
 		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => new WP_Error( 'jibit-error', $body[ 'errorCode' ] )
+				'error'   => sprintf( "Request order from jibit contains error. %s", (string) $body[ 'errorCode' ] ),
+				'request' => $data
 			);
 		}
 

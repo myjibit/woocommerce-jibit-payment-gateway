@@ -48,7 +48,6 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 			add_action( 'woocommerce_update_options_payment_gateways', array( $this, 'process_admin_options' ) );
 		}
 
-		add_action( 'woocommerce_checkout_order_processed', array( $this, 'requestJibitOrder' ) );
 		add_action( 'woocommerce_receipt_' . $this->id . '', array( $this, 'redirectToJibit' ) );
 		add_action( 'woocommerce_api_wc_jibit_gateway', array(
 			$this,
@@ -184,26 +183,24 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		$order = new WC_Order( $order_id );
+		$order = wc_get_order( $order_id );
+		$debug = ! empty( $this->settings[ 'debug' ] ) && $this->settings[ 'debug' ] === 'yes';
 
-		return array(
-			'result'   => 'success',
+		$redirect = array(
+			'result'   => 'error',
 			'redirect' => $order->get_checkout_payment_url( true )
 		);
-	}
-
-
-	public function requestJibitOrder( $order_id ) {
-		$order = wc_get_order( $order_id );
 
 		if ( $order->get_payment_method() !== $this->id ) {
-			return;
+			return $redirect;
 		}
 
 		$currency = get_woocommerce_currency();
 
 		if ( ! in_array( $currency, array( 'IRT', 'IRR' ) ) ) {
-			return;
+			wc_add_notice( __( 'Jibit gateway supports only Rial and Toman currencies.', 'wjpg' ), 'error' );
+
+			return $redirect;
 		}
 
 		$amount = absint( $order->get_total() );
@@ -216,7 +213,10 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		if ( ! $token[ 'succeed' ] ) {
 			$this->log( 'Get cached token result: ' . $token[ 'error' ] . ' - ' . wc_print_r( $token[ 'request' ], true ) );
 
-			return false;
+			$message = $debug ? $token[ 'error' ] : __( 'An error has occurred. Please notice site administrator.', 'wjpg' );
+			wc_add_notice( $message, 'error' );
+
+			return $redirect;
 		}
 		$token = $token[ 'token' ];
 
@@ -237,12 +237,24 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		);
 
 
-		if ( $jibitOrder[ 'succeed' ] ) {
-			update_post_meta( $order_id, 'jibit_order_id', $jibitOrder[ 'order_id' ] );
-			update_post_meta( $order_id, 'jibit_order_redirect_url', $jibitOrder[ 'redirect_url' ] );
+		if ( ! $jibitOrder[ 'succeed' ] ) {
+			$this->log( 'Get order from jibit: ' . $token[ 'error' ] . ' - ' . wc_print_r( $token[ 'request' ], true ) );
+
+			$message = $debug ? $token[ 'error' ] : __( 'An error has occurred. Please notice site administrator.', 'wjpg' );
+			wc_add_notice( $message, 'error' );
+
+			return $redirect;
 		}
 
+		update_post_meta( $order_id, 'jibit_order_id', $jibitOrder[ 'order_id' ] );
+		update_post_meta( $order_id, 'jibit_order_redirect_url', $jibitOrder[ 'redirect_url' ] );
+
+		return array(
+			'result'   => 'success',
+			'redirect' => $jibitOrder[ 'redirect_url' ]
+		);
 	}
+
 
 	/**
 	 * Loads payment form in receipt page
@@ -364,7 +376,7 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function log( $message, $level = 'info' ) {
-		$enabled = ! empty( $this->settings[ 'enable_logs' ] ) && $this->settings[ 'enable_logs' ] === 'yes';
+		$enabled = ! empty( $this->settings[ 'debug' ] ) && $this->settings[ 'debug' ] === 'yes';
 		if ( $enabled ) {
 			if ( empty( self::$log ) ) {
 				self::$log = wc_get_logger();
