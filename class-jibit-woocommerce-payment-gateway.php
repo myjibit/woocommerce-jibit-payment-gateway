@@ -48,7 +48,7 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 			add_action( 'woocommerce_update_options_payment_gateways', array( $this, 'process_admin_options' ) );
 		}
 
-		add_action( 'woocommerce_receipt_' . $this->id . '', array( $this, 'redirectToJibit' ) );
+		add_action( 'woocommerce_receipt_' . $this->id . '', array( $this, 'redirectToJibitForm' ) );
 		add_action( 'woocommerce_api_wc_jibit_gateway', array(
 			$this,
 			'jibitCallback'
@@ -112,6 +112,13 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 					'description' => __( 'Your merchant password', 'wjpg' ),
 					'default'     => '',
 					'desc_tip'    => true
+				),
+				'auto_redirect_to_qrpg'         => array(
+					'title'    => __( 'Auto redirect to gateway', 'wjpg' ),
+					'type'     => 'checkbox',
+					'label'    => __( 'Auto redirect to gateway in receipt page', 'wjpg' ),
+					'default'  => 'yes',
+					'desc_tip' => true,
 				),
 				'messages'                      => array(
 					'title'       => __( 'Messages', 'wjpg' ),
@@ -183,76 +190,20 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		$order = wc_get_order( $order_id );
-		$debug = ! empty( $this->settings[ 'debug' ] ) && $this->settings[ 'debug' ] === 'yes';
 
-		$redirect = array(
-			'result'   => 'error',
-			'redirect' => $order->get_checkout_payment_url( true )
-		);
+		$redirect = wjpgRequestOrder( $order_id );
+		$order    = wc_get_order( $order_id );
 
-		if ( $order->get_payment_method() !== $this->id ) {
-			return $redirect;
+		if ( $redirect[ 'result' ] !== 'success' ) {
+			wc_add_notice( $redirect[ 'error' ], 'error' );
+
+			return array(
+				'result'   => 'error',
+				'redirect' => $order->get_checkout_payment_url( true )
+			);
 		}
 
-		$currency = get_woocommerce_currency();
-
-		if ( ! in_array( $currency, array( 'IRT', 'IRR' ) ) ) {
-			wc_add_notice( __( 'Jibit gateway supports only Rial and Toman currencies.', 'wjpg' ), 'error' );
-
-			return $redirect;
-		}
-
-		$amount = absint( $order->get_total() );
-
-		if ( $currency === 'IRT' ) {
-			$amount *= 10;
-		}
-
-		$token = Jibit_API::getCachedToken( $this->merchant_id, $this->merchant_password );
-		if ( ! $token[ 'succeed' ] ) {
-			$this->log( 'Get cached token result: ' . $token[ 'error' ] . ' - ' . wc_print_r( $token[ 'request' ], true ) );
-
-			$message = $debug ? $token[ 'error' ] : __( 'An error has occurred. Please notice site administrator.', 'wjpg' );
-			wc_add_notice( $message, 'error' );
-
-			return $redirect;
-		}
-		$token = $token[ 'token' ];
-
-		$phone       = get_post_meta( $order_id, '_billing_phone', true );
-		$callbackUrl = add_query_arg( 'wc_order', $order_id, WC()->api_request_url( 'wc_jibit_gateway' ) );
-
-
-		$jibitOrder = Jibit_API::requestOrder(
-			array(
-				'amount'          => $amount,
-				'callBackUrl'     => $callbackUrl,
-				'userIdentity'    => $phone,
-				'additionalData'  => json_encode( array() ),
-				'description'     => '',
-				'merchantOrderId' => $order_id
-			),
-			$token
-		);
-
-
-		if ( ! $jibitOrder[ 'succeed' ] ) {
-			$this->log( 'Get order from jibit: ' . $token[ 'error' ] . ' - ' . wc_print_r( $token[ 'request' ], true ) );
-
-			$message = $debug ? $token[ 'error' ] : __( 'An error has occurred. Please notice site administrator.', 'wjpg' );
-			wc_add_notice( $message, 'error' );
-
-			return $redirect;
-		}
-
-		update_post_meta( $order_id, 'jibit_order_id', $jibitOrder[ 'order_id' ] );
-		update_post_meta( $order_id, 'jibit_order_redirect_url', $jibitOrder[ 'redirect_url' ] );
-
-		return array(
-			'result'   => 'success',
-			'redirect' => $jibitOrder[ 'redirect_url' ]
-		);
+		return $redirect;
 	}
 
 
@@ -263,20 +214,25 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 *
 	 * @return void
 	 */
-	public function redirectToJibit( $order_id ) {
+	public function redirectToJibitForm( $order_id ) {
 		$order = wc_get_order( $order_id );
 		if ( $order->get_payment_method() !== $this->id ) {
 			return;
 		}
 
-		$jibitOrderId = get_post_meta( $order_id, 'jibit_order_id', true );
-		$paymentUrl   = get_post_meta( $order_id, 'jibit_order_redirect_url', true );
-
-		if ( ! $jibitOrderId ) {
-			return;
+		$autoRedirect = true;
+		if ( isset( $this->settings[ 'auto_redirect_to_qrpg' ] ) && $this->settings[ 'auto_redirect_to_qrpg' ] === 'no' ) {
+			$autoRedirect = false;
 		}
-
-		$returnUrl = wc_get_checkout_url();
+		$paymentUrl = add_query_arg(
+			array(
+				'action' => 'redirect_to_jibit',
+				'order'  => $order_id,
+				'nonce'  => wp_create_nonce( 'redirect_to_jibit' )
+			),
+			site_url()
+		);
+		$returnUrl  = wc_get_checkout_url();
 
 
 		$template = locate_template( 'woocommerce/jibit/payment-form.php', false );
@@ -284,7 +240,6 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		if ( ! $template ) {
 			$template = WC_JIBIT_PAYMENT_GATEWAY_DIR . '/templates/payment-form.php';
 		}
-
 
 		require $template;
 	}
@@ -378,10 +333,7 @@ class Jibit_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	public function log( $message, $level = 'info' ) {
 		$enabled = ! empty( $this->settings[ 'debug' ] ) && $this->settings[ 'debug' ] === 'yes';
 		if ( $enabled ) {
-			if ( empty( self::$log ) ) {
-				self::$log = wc_get_logger();
-			}
-			self::$log->log( $level, $message, array( 'source' => 'jibit' ) );
+			wjpgLog( $message, $level );
 		}
 
 	}

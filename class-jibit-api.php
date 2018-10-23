@@ -37,7 +37,7 @@ class Jibit_API {
 		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
-				'error'   => "Couldn't validate request token body.",
+				'error'   => sprintf( "Couldn't validate request token body. status code: %s, body: %s", (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
 				'request' => $data
 			);
 		}
@@ -45,7 +45,7 @@ class Jibit_API {
 		if ( ! $body ) {
 			return array(
 				'succeed' => false,
-				'error'   => "Couldn't parse body for request token.",
+				'error'   => sprintf( "Couldn't parse body for request token. status code: %s, body: %s", (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
 				'request' => $data
 			);
 		}
@@ -53,7 +53,7 @@ class Jibit_API {
 		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => 'Jibit didn\'t create token.',
+				'error'   => sprintf( "Jibit didn't create token. error code: %s, status code: %s, body: %s", (string) $body[ 'errorCode' ], (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
 				'request' => $data
 			);
 		}
@@ -85,7 +85,7 @@ class Jibit_API {
 		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
-				'error'   => "Couldn't validate request refresh token body.",
+				'error'   => sprintf( "Couldn't validate request refresh token body. status code: %s, body: %s", (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
 				'request' => $data
 			);
 		}
@@ -93,7 +93,7 @@ class Jibit_API {
 		if ( ! $body ) {
 			return array(
 				'succeed' => false,
-				'error'   => "Couldn't parse body for request refresh token.",
+				'error'   => sprintf( "Couldn't parse body for request refresh token. status code: %s, body: %s", (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
 				'request' => $data
 			);
 		}
@@ -101,7 +101,7 @@ class Jibit_API {
 		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => 'Jibit didn\'t create refresh token.',
+				'error'   => sprintf( "Jibit didn't create refresh token. error code: %s, status code: %s, body: %s", (string) $body[ 'errorCode' ], (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
 				'request' => $data
 			);
 		}

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Jibit Payment Gateway\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-23 12:26+0000\n"
-"PO-Revision-Date: 2018-10-23 12:27+0000\n"
+"POT-Creation-Date: 2018-10-23 15:21+0000\n"
+"PO-Revision-Date: 2018-10-23 15:23+0000\n"
 "Last-Translator: admin <vahidd.com@gmail.com>\n"
 "Language-Team: فارسی\n"
 "Language: fa_IR\n"
@@ -13,30 +13,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/"
 
-#: filters.php:22
-msgid "Phone number is a required field."
-msgstr "فیلد شماره تلفن الزامی است."
-
-#: filters.php:25
-msgid "Phone number is invalid."
-msgstr "شماره تلفن صحیح نیست."
-
-#: filters.php:48
+#: filters.php:28
 msgid "Tokens reset."
 msgstr "توکن بازنشانی شد."
 
-#: filters.php:53
+#: filters.php:33
 msgid "Reset Jibit Tokens"
 msgstr "بازنشانی توکن جیبیت"
 
-#: filters.php:54
+#: filters.php:34
 msgid "Reset"
 msgstr "بازنشانی"
 
-#: filters.php:56
+#: filters.php:36
 msgid "This will reset token and refresh token for pay request."
 msgstr ""
 "این ابزار توکن جیبیت که برای درخواست پرداخت استفاده می‌شود را ریست می‌کند."
+
+#: actions.php:94
+msgid "Phone number is a required field."
+msgstr "فیلد شماره تلفن الزامی است."
+
+#: actions.php:97
+msgid "Phone number is invalid."
+msgstr "شماره تلفن صحیح نیست."
 
 #: class-jibit-woocommerce-payment-gateway.php:28
 #: class-jibit-woocommerce-payment-gateway.php:29
@@ -93,41 +93,49 @@ msgid "Your merchant password"
 msgstr "رمز عبور پذیرنده شما در جیبیت"
 
 #: class-jibit-woocommerce-payment-gateway.php:117
+msgid "Auto redirect to gateway"
+msgstr "انتقال خودکار به درگاه"
+
+#: class-jibit-woocommerce-payment-gateway.php:119
+msgid "Auto redirect to gateway in receipt page"
+msgstr "فعال کردن انتقال خودکار به درگاه جیبیت در صفحه رسید"
+
+#: class-jibit-woocommerce-payment-gateway.php:124
 msgid "Messages"
 msgstr "پیام‌ها"
 
-#: class-jibit-woocommerce-payment-gateway.php:122
+#: class-jibit-woocommerce-payment-gateway.php:129
 msgid "Successful payment message"
 msgstr "پیغام پرداخت موفقیت‌آمیز"
 
-#: class-jibit-woocommerce-payment-gateway.php:124
+#: class-jibit-woocommerce-payment-gateway.php:131
 msgid ""
 "Enter the message which will be shown to the customer after successful "
 "payment"
 msgstr "این پیام بعد از پرداخت موفق به کاربر نمایش داده می‌شود."
 
-#: class-jibit-woocommerce-payment-gateway.php:125
+#: class-jibit-woocommerce-payment-gateway.php:132
 msgid "Your payment was successful"
 msgstr "پرداخت شما موفقیت‌آمیز بود."
 
-#: class-jibit-woocommerce-payment-gateway.php:129
+#: class-jibit-woocommerce-payment-gateway.php:136
 msgid "Failed payment message"
 msgstr "پیام پرداخت ناموفق"
 
-#: class-jibit-woocommerce-payment-gateway.php:131
+#: class-jibit-woocommerce-payment-gateway.php:138
 msgid ""
 "Enter the message which will be shown to the customer after failed payment"
 msgstr "این پیام بعد از پرداخت ناموفق به کاربر نمایش داده می‌شود."
 
-#: class-jibit-woocommerce-payment-gateway.php:132
+#: class-jibit-woocommerce-payment-gateway.php:139
 msgid "An error has occurred. Please try again."
 msgstr "خطایی رخ داده است. لطفاً دوباره امتحان کنید."
 
-#: class-jibit-woocommerce-payment-gateway.php:136
+#: class-jibit-woocommerce-payment-gateway.php:143
 msgid "User canceled payment message"
 msgstr "پیام لغو کردن پرداخت توسط کاربر"
 
-#: class-jibit-woocommerce-payment-gateway.php:138
+#: class-jibit-woocommerce-payment-gateway.php:145
 msgid ""
 "This message will be shown when user has clicked on cancel button in gateway "
 "page."
@@ -135,54 +143,45 @@ msgstr ""
 "این پیغام زمانی که کاربر در صفحه پرداخت روی دکمه لغو کردن پرداخت کلیک کند "
 "نمایش داده می‌شود."
 
-#: class-jibit-woocommerce-payment-gateway.php:139
+#: class-jibit-woocommerce-payment-gateway.php:146
 msgid "You have canceled the payment."
 msgstr "شما از پرداخت انصراف دادید."
 
-#: class-jibit-woocommerce-payment-gateway.php:143
+#: class-jibit-woocommerce-payment-gateway.php:150
 msgid "Payment expired message"
 msgstr "پیام منقضی شدن پرداخت"
 
-#: class-jibit-woocommerce-payment-gateway.php:145
+#: class-jibit-woocommerce-payment-gateway.php:152
 msgid "This message will be shown when payment has expired."
 msgstr "این پیغام زمانی که پرداخت منقضی شود نمایش داده می‌شود."
 
-#: class-jibit-woocommerce-payment-gateway.php:146
+#: class-jibit-woocommerce-payment-gateway.php:153
 msgid "The payment is expired."
 msgstr "پرداخت منقضی شده است."
 
-#: class-jibit-woocommerce-payment-gateway.php:150
+#: class-jibit-woocommerce-payment-gateway.php:157
 msgid "Unverified payment message"
 msgstr "پیام پرداخت تأیید نشده"
 
-#: class-jibit-woocommerce-payment-gateway.php:152
+#: class-jibit-woocommerce-payment-gateway.php:159
 msgid "This message will be shown when order is not verified by Jibit."
 msgstr "این پیام زمانی که پرداخت توسط جیبیت تأیید نشود، نمایش داده می‌شود."
 
-#: class-jibit-woocommerce-payment-gateway.php:153
+#: class-jibit-woocommerce-payment-gateway.php:160
 msgid "Couldn't verify order by Jibit. Please contact admin."
 msgstr "پرداخت شما توسط جیبیت تأیید نشد. لطفا با مدیریت تماس بگیرید."
 
-#: class-jibit-woocommerce-payment-gateway.php:157
+#: class-jibit-woocommerce-payment-gateway.php:164
 msgid "Tools"
 msgstr "ابزار"
 
-#: class-jibit-woocommerce-payment-gateway.php:162
+#: class-jibit-woocommerce-payment-gateway.php:169
 msgid "Enable debugging"
 msgstr "فعال کردن خطایابی"
 
-#: class-jibit-woocommerce-payment-gateway.php:164
+#: class-jibit-woocommerce-payment-gateway.php:171
 msgid "Enables logs on errors"
 msgstr "خطاها در سیستم ذخیره می‌شوند."
-
-#: class-jibit-woocommerce-payment-gateway.php:201
-msgid "Jibit gateway supports only Rial and Toman currencies."
-msgstr "درگاه پرداخت جیبیت فقط از واحد پولی ریال و تومان پشتیبانی می‌کند."
-
-#: class-jibit-woocommerce-payment-gateway.php:216
-#: class-jibit-woocommerce-payment-gateway.php:243
-msgid "An error has occurred. Please notice site administrator."
-msgstr "خطایی رخ داده است. لطفا با مدیر سایت تماس بگیرید."
 
 #: helpers.php:5
 msgid "Order created."
@@ -192,13 +191,37 @@ msgstr "سفارش ایجاد شد."
 msgid "User redirected to Jibit payment gateway."
 msgstr "کاربر به درگاه پرداخت منتقل شد."
 
-#: templates/payment-form.php:67
+#: helpers.php:54
+msgid "Order not found."
+msgstr "سفارش یافت نشد."
+
+#: helpers.php:66
+msgid "Payment method for requested order is not Jibit."
+msgstr "درگاه پرداخت برای سفارش مورد نظر جیبیت نمی‌باشد."
+
+#: helpers.php:75
+msgid "Jibit gateway supports only Rial and Toman currencies."
+msgstr "درگاه پرداخت جیبیت فقط از واحد پولی ریال و تومان پشتیبانی می‌کند."
+
+#: helpers.php:91 helpers.php:122
+msgid "An error has occurred. Please notice site administrator."
+msgstr "خطایی رخ داده است. لطفا با مدیر سایت تماس بگیرید."
+
+#: templates/payment-form.php:68
 msgid "Pay"
 msgstr "پرداخت"
 
-#: templates/payment-form.php:69
+#: templates/payment-form.php:70
 msgid "Return"
 msgstr "بازگشت"
+
+#: templates/payment-form.php:73
+msgid ""
+"You will be redirected to the gateway in a while. If you didn't redirect "
+"automatically click on the pay button."
+msgstr ""
+"تا لحظاتی دیگر به درگاه جیبیت منتقل خواهید شد. اگر به طور خودکار منتقل "
+"نشدید، روی دکمه «پرداخت» کلیک کنید."
 
 #. Name of the plugin
 msgid "WooCommerce Jibit Payment Gateway"
