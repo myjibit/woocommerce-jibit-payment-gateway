@@ -55,11 +55,6 @@ function wjpgRequestOrder( $order_id ) {
 		);
 	}
 
-	$redirect = array(
-		'result'   => 'error',
-		'redirect' => $order->get_checkout_payment_url( true )
-	);
-
 	if ( $order->get_payment_method() !== 'jibit' ) {
 		return array(
 			'result' => 'error',
@@ -119,7 +114,7 @@ function wjpgRequestOrder( $order_id ) {
 			wjpgLog( 'Get order from jibit: ' . $token[ 'error' ] . ' - ' . wc_print_r( $token[ 'request' ], true ) );
 		}
 
-		$message = $debug ? $token[ 'error' ] : __( 'An error has occurred. Please notice site administrator.', 'wjpg' );
+		$message = $debug ? $jibitOrder[ 'error' ] : __( 'An error has occurred. Please notice site administrator.', 'wjpg' );
 
 		return array(
 			'result' => 'error',

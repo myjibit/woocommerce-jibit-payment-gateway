@@ -37,7 +37,10 @@ class Jibit_API {
 		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Couldn't validate request token body. status code: %s, body: %s", (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
+				'error'   => self::error(
+					'Couldn\'t validate request token body.',
+					$data
+				),
 				'request' => $data
 			);
 		}
@@ -45,7 +48,10 @@ class Jibit_API {
 		if ( ! $body ) {
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Couldn't parse body for request token. status code: %s, body: %s", (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
+				'error'   => self::error(
+					'Couldn\'t parse body for request token.',
+					$data
+				),
 				'request' => $data
 			);
 		}
@@ -53,7 +59,10 @@ class Jibit_API {
 		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Jibit didn't create token. error code: %s, status code: %s, body: %s", (string) $body[ 'errorCode' ], (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
+				'error'   => self::error(
+					array( 'Jibit didn\'t create token. error code: %s', (string) $body[ 'errorCode' ] ),
+					$data
+				),
 				'request' => $data
 			);
 		}
@@ -85,7 +94,10 @@ class Jibit_API {
 		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $data[ 'response' ][ 'code' ] ) ) {
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Couldn't validate request refresh token body. status code: %s, body: %s", (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
+				'error'   => self::error(
+					'Couldn\'t validate request refresh token body.',
+					$data
+				),
 				'request' => $data
 			);
 		}
@@ -93,7 +105,10 @@ class Jibit_API {
 		if ( ! $body ) {
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Couldn't parse body for request refresh token. status code: %s, body: %s", (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
+				'error'   => self::error(
+					'Couldn\'t parse body for request refresh token.',
+					$data
+				),
 				'request' => $data
 			);
 		}
@@ -101,7 +116,10 @@ class Jibit_API {
 		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Jibit didn't create refresh token. error code: %s, status code: %s, body: %s", (string) $body[ 'errorCode' ], (string) $data[ 'response' ][ 'code' ], $data[ 'body' ] ),
+				'error'   => self::error(
+					array( 'Jibit didn\'t create refresh token. error code: %s', (string) $body[ 'errorCode' ] ),
+					$data
+				),
 				'request' => $data
 			);
 		}
@@ -185,6 +203,18 @@ class Jibit_API {
 		);
 	}
 
+	public static function error( $message, $request ) {
+		$output = '<div style="direction: ltr; text-align: left;">';
+
+
+		$output .= '<p>' . ( is_array( $message ) ? call_user_func_array( 'sprintf', $message ) : $message ) . '</p>';
+
+		$output .= '<p>' . sprintf( 'Status code: %s', $request[ 'response' ][ 'code' ] ) . '</p>';
+		$output .= '<p>' . sprintf( 'Response body: %s', $request[ 'body' ] ) . '</p>';
+
+		return $output . '</div>';
+	}
+
 	/**
 	 * Request an order to pay from Jibit. Returns an array which includes order_id and succeed properties.
 	 *
@@ -212,7 +242,10 @@ class Jibit_API {
 
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Couldn't validate request payment status code. response status code: %s", $responseStatusCode ),
+				'error'   => self::error(
+					'Couldn\'t validate request payment status code.',
+					$data
+				),
 				'request' => $data
 			);
 		}
@@ -222,7 +255,10 @@ class Jibit_API {
 		if ( ! $body ) {
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Couldn't parse request payment body. body: %s", $data[ 'body' ] ),
+				'error'   => self::error(
+					'Couldn\'t parse request payment body.',
+					$data
+				),
 				'request' => $data
 			);
 		}
@@ -230,7 +266,10 @@ class Jibit_API {
 		if ( $body[ 'errorCode' ] > 0 ) {
 			return array(
 				'succeed' => false,
-				'error'   => sprintf( "Request order from jibit contains error. %s", (string) $body[ 'errorCode' ] ),
+				'error'   => self::error(
+					array( 'Request order from jibit contains error. error code: %s', (string) $body[ 'errorCode' ] ),
+					$data
+				),
 				'request' => $data
 			);
 		}
