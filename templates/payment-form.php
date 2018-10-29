@@ -57,7 +57,7 @@
     }
 </style>
 <div>
-    <a class="jibit-pay-button" id="jibit-pay-button" href="<?php echo esc_url( $paymentUrl ) ?>">
+    <a class="jibit-pay-button <?php echo $autoRedirect ? 'auto-redirect' : '' ?>" id="jibit-pay-button" href="<?php echo esc_url( $paymentUrl ) ?>">
         <svg width="21px" height="21px" viewBox="0 0 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                 <g id="JibitLogo" transform="translate(0.085938, 0.175781)" fill="#FFFFFF" fill-rule="nonzero">
@@ -75,11 +75,4 @@
         </p>
 	<?php endif; ?>
 </div>
-<?php if ( $autoRedirect ) : ?>
-    <script type="text/javascript">
-      setTimeout(function () {
-        window.location = '<?php echo esc_url( $paymentUrl ) ?>';
-      }, 3000);
-    </script>
-<?php endif; ?>
 <br />

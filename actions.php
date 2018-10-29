@@ -100,3 +100,34 @@ function wjpgValidatePhoneNumberOnCheckoutPage( $data, $errors ) {
 }
 
 add_action( 'woocommerce_after_checkout_validation', 'wjpgValidatePhoneNumberOnCheckoutPage', 10, 2 );
+
+add_Action( 'wp_head', function () {
+	?>
+    <script type="text/javascript">
+      if (window.attachEvent) {
+        window.attachEvent('onload', jibitDocumentLoad);
+      } else {
+        if (window.onload) {
+          var curronload = window.onload;
+          var newOnLoad = function (evt) {
+            curronload(evt);
+            jibitDocumentLoad(evt);
+          };
+          window.onload = newOnLoad;
+        } else {
+          window.onload = jibitDocumentLoad;
+        }
+      }
+
+      function jibitDocumentLoad() {
+        var $payButton = document.getElementById('jibit-pay-button');
+        if (!$payButton) {
+          return true;
+        }
+        if ($payButton.getAttribute('class').indexOf('auto-redirect') !== -1) {
+          $payButton.click();
+        }
+      }
+    </script>
+	<?php
+} );
