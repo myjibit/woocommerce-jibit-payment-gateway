@@ -223,7 +223,10 @@ class Jibit_API {
 	 * @return array
 	 */
 	public static function requestOrder( $order, $token ) {
-		$data               = wp_remote_post(
+		$order[ 'userIdentity' ] = wjpgConvert2EnglishNumbers( $order[ 'userIdentity' ] );
+		preg_match( '/^((00|\+)?(98)|0)?(9\d{9})$/', $order[ 'userIdentity' ], $matches );
+		$order[ 'userIdentity' ] = "0" . $matches[ 4 ];
+		$data                    = wp_remote_post(
 			self::$jibitApi . '/order/initiate',
 			array(
 				'headers' => array(
@@ -234,7 +237,7 @@ class Jibit_API {
 				'method'  => 'POST'
 			)
 		);
-		$responseStatusCode = $data[ 'response' ][ 'code' ];
+		$responseStatusCode      = $data[ 'response' ][ 'code' ];
 		if ( is_wp_error( $data ) || ! wjpgValidateHttpStatusCode( $responseStatusCode ) ) {
 			if ( $responseStatusCode === 401 ) {
 				self::deleteToken();

@@ -7,23 +7,11 @@ function wjpgAddGateway( $methods ) {
 	return $methods;
 }
 
-function wjpgFilterCheckoutPostData( $data ) {
-	$phone = $data[ 'billing_phone' ];
-
-	if ( preg_match( '/^((00|\+)?(98)|0)?(9\d{9})$/', $phone, $matches ) ) {
-		$data[ 'billing_phone' ] = "0" . $matches[ 4 ];
-	}
-
-	return $data;
-}
-
-add_filter( 'woocommerce_checkout_posted_data', 'wjpgFilterCheckoutPostData' );
-
 function wjpgDebugToolsResetTokens() {
 	if ( ! class_exists( 'Jibit_API' ) ) {
 		require WC_JIBIT_PAYMENT_GATEWAY_DIR . '/class-jibit-api.php';
 	}
-	$delete = Jibit_API::deleteToken();
+	Jibit_API::deleteToken();
 
 	return __( 'Tokens reset.', 'wjpg' );
 }
